@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>মুনাফা হিসাবকারী</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: linear-gradient(to right, #6a11cb, #2575fc);
+      color: #333;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 420px;
+      width: 100%;
+      background: #ffffffee;
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+      backdrop-filter: blur(6px);
+      text-align: center;
+    }
+
+    .bank-header {
+      margin-bottom: 20px;
+    }
+
+    .bank-header h1 {
+      font-size: 1.4rem;
+      margin: 0;
+      color: #00695c;
+    }
+
+    .bank-header p {
+      margin: 5px 0 15px;
+      font-size: 0.95rem;
+      color: #444;
+    }
+
+    h2 {
+      margin-bottom: 20px;
+      font-size: 1.8rem;
+      color: #222;
+      position: relative;
+    }
+
+    h2::after {
+      content: '';
+      position: absolute;
+      width: 50px;
+      height: 3px;
+      background: #2575fc;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: -8px;
+      border-radius: 4px;
+    }
+
+    label {
+      text-align: left;
+      display: block;
+      font-weight: 500;
+      margin: 12px 0 5px;
+      color: #444;
+    }
+
+    select,
+    input[type="number"] {
+      width: 90%;
+      padding: 10px 12px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 1rem;
+      margin-bottom: 10px;
+      background: #f5f5f5;
+      transition: border 0.2s, background 0.3s;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: #fff;
+      background: linear-gradient(to right, #2575fc, #6a11cb);
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-top: 16px;
+      transition: background 0.3s, transform 0.2s;
+    }
+
+    button:hover {
+      background: linear-gradient(to right, #6a11cb, #2575fc);
+      transform: translateY(-2px);
+    }
+
+    #result {
+      display: none;
+      background: #ecfdf5;
+      border: 1px solid #d1fae5;
+      color: #065f46;
+      padding: 12px;
+      margin-top: 20px;
+      border-radius: 8px;
+      text-align: left;
+      font-size: 1rem;
+      line-height: 1.6;
+    }
+
+    .result-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-weight: 600;
+      border-bottom: 1px dashed #cbd5e0;
+      padding-bottom: 4px;
+    }
+
+    .footer {
+      margin-top: 30px;
+      font-size: 0.9rem;
+      color: #666;
+      text-align: center;
+    }
+
+    .footer a {
+      font-weight: bold;
+      color: #00695c;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="bank-header">
+      <h1>ইসলামি ব্যাংক বাংলাদেশ পিএলসি</h1>
+      <p>MTDR অ্যাকাউন্টের মুনাফা হিসাব</p>
+    </div>
+
+    <h2>মুনাফা হিসাবকারী</h2>
+
+    <label for="plan">মেয়াদ নির্বাচন করুন:</label>
+    <select id="plan" onchange="setRateAndDuration()">
+      <option value="">-- একটি নির্বাচন করুন --</option>
+      <option value="1m">01 Month - 5.25%</option>
+      <option value="3m">03 Months - 9.50%</option>
+      <option value="100d">100 Days - 9.60%</option>
+      <option value="6m">06 Months - 9.80%</option>
+      <option value="200d">200 Days - 9.90%</option>
+      <option value="300d">300 Days - 9.95%</option>
+      <option value="12m">12 Months - 10.00%</option>
+      <option value="24m">24 Months - 10.20%</option>
+      <option value="36m">36 Months - 10.50%</option>
+    </select>
+
+    <label for="amount">টাকার পরিমাণ (Amount):</label>
+    <input type="number" id="amount" placeholder="Amount (টাকা)" />
+
+    <button onclick="calculateProfit()">হিসাব করুন</button>
+
+    <div id="result"></div>
+
+    <div class="footer">
+      Developed by <a href="https://www.facebook.com/share/1K6Esz6k76/" target="_blank">Rubel Mahmud</a>
+    </div>
+  </div>
+
+  <script>
+    let currentRate = 0;
+    let currentDuration = 0;
+
+    function setRateAndDuration() {
+      const plan = document.getElementById('plan').value;
+
+      switch (plan) {
+        case '1m': currentRate = 5.25; currentDuration = 30; break;
+        case '3m': currentRate = 9.50; currentDuration = 90; break;
+        case '100d': currentRate = 9.60; currentDuration = 100; break;
+        case '6m': currentRate = 9.80; currentDuration = 180; break;
+        case '200d': currentRate = 9.90; currentDuration = 200; break;
+        case '300d': currentRate = 9.95; currentDuration = 300; break;
+        case '12m': currentRate = 10.00; currentDuration = 365; break;
+        case '24m': currentRate = 10.20; currentDuration = 730; break;
+        case '36m': currentRate = 10.50; currentDuration = 1095; break;
+        default: currentRate = 0; currentDuration = 0;
+      }
+    }
+
+    function calculateProfit() {
+      const amount = parseFloat(document.getElementById('amount').value);
+      const resultDiv = document.getElementById('result');
+      resultDiv.style.display = 'none';
+      resultDiv.innerHTML = '';
+
+      if (isNaN(amount) || currentRate === 0 || currentDuration === 0) {
+        resultDiv.style.display = 'block';
+        resultDiv.innerHTML = '<div style="color: red;">সঠিকভাবে সব তথ্য দিন এবং একটি মেয়াদ নির্বাচন করুন।</div>';
+        return;
+      }
+
+      const yearlyProfit = (amount * currentRate) / 100;
+      const totalProfit = (yearlyProfit * currentDuration) / 365;
+
+      const vat15 = totalProfit * 0.15;
+      const vat10 = totalProfit * 0.10;
+
+      const netProfit15 = totalProfit - vat15;
+      const netProfit10 = totalProfit - vat10;
+
+      resultDiv.style.display = 'block';
+      resultDiv.innerHTML += `
+        <div class="result-item"><span>মোট মুনাফা (ভ্যাটের আগে):</span><span>${totalProfit.toFixed(2)} টাকা</span></div>
+        <div class="result-item"><span>১৫% ভ্যাট কাটার পর:</span><span>${netProfit15.toFixed(2)} টাকা</span></div>
+        <div class="result-item"><span>১০% ভ্যাট কাটার পর (TIN থাকলে):</span><span>${netProfit10.toFixed(2)} টাকা</span></div>
+        <p style="margin-top:10px;font-size:0.9rem;color:#555;">বিঃদ্রঃ টিন সার্টিফিকেট জমা দিলে ভ্যাট ১০% কাটা হবে।</p>
+      `;
+    }
+  </script>
+</body>
+</html>
