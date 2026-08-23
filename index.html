@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MTDR মুনাফা হিসাবকারী | ইসলামি ব্যাংক বাংলাদেশ পিএলসি</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Bengali:wght@500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <!-- Firebase (visitor counter) -->
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+  <style>
+    :root {
+      --brand: #0b5c34;
+      --brand-dark: #073b21;
+      --brand-light: #0f7a45;
+      --gold: #b3872f;
+      --gold-light: #e6d5a8;
+      --ink: #16241c;
+      --ink-soft: #4a5a4f;
+      --paper: #fbf9f4;
+      --paper-line: #e5decb;
+      --danger: #b3261e;
+      --danger-bg: #fdf1ef;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: 'Noto Sans Bengali', sans-serif;
+      background:
+        radial-gradient(circle at 15% 10%, rgba(255,255,255,0.06), transparent 40%),
+        linear-gradient(160deg, var(--brand-dark) 0%, var(--brand) 45%, #0a4a2b 100%);
+      color: var(--ink);
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      margin: 0;
+      padding: 24px 14px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 440px;
+      background: var(--paper);
+      border-radius: 14px;
+      padding: 0;
+      box-shadow: 0 20px 45px rgba(0,0,0,0.28), 0 2px 0 var(--gold);
+      text-align: center;
+      overflow: hidden;
+      margin-top: 6px;
+    }
+
+    /* ===== Letterhead ===== */
+    .letterhead {
+      background: linear-gradient(135deg, var(--brand-dark), var(--brand));
+      padding: 22px 18px 18px;
+      position: relative;
+    }
+
+    .letterhead::after {
+      content: "";
+      position: absolute;
+      left: 0; right: 0; bottom: -1px;
+      height: 4px;
+      background: repeating-linear-gradient(90deg, var(--gold) 0 10px, transparent 10px 18px);
+    }
+
+    .bank-header h1 {
+      font-family: 'Noto Serif Bengali', serif;
+      font-size: 1.15rem;
+      margin: 0;
+      color: #fff;
+      letter-spacing: 0.3px;
+    }
+
+    .bank-header p {
+      font-size: 0.78rem;
+      margin: 4px 0 0 0;
+      color: var(--gold-light);
+      letter-spacing: 0.5px;
+    }
+
+    .visitor-counter {
+      position: absolute;
+      right: 14px;
+      bottom: 6px;
+      font-size: 0.62rem;
+      color: var(--gold-light);
+      opacity: 0.85;
+      letter-spacing: 0.2px;
+    }
+
+    /* ===== Body ===== */
+    .body-pad { padding: 20px 18px 16px; }
+
+    .input-section { margin-bottom: 16px; text-align: left; }
+
+    .field-label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--ink-soft);
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1.5px solid var(--paper-line);
+      border-radius: 8px;
+      font-size: 1.15rem;
+      background: #fff;
+      color: var(--brand-dark);
+      outline: none;
+      text-align: center;
+      box-sizing: border-box;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    input:focus {
+      border-color: var(--brand);
+      box-shadow: 0 0 0 3px rgba(11,92,52,0.12);
+    }
+
+    .label-text {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--ink-soft);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      text-align: left;
+    }
+
+    .label-text .note-inline {
+      font-size: 0.66rem;
+      font-weight: 500;
+      color: var(--gold);
+    }
+
+    .tenure-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+
+    .tenure-card {
+      background: #fff;
+      border: 1.5px solid var(--paper-line);
+      border-radius: 8px;
+      padding: 8px 4px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.18s;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 52px;
+    }
+
+    .tenure-card h3 {
+      font-size: 0.74rem;
+      margin: 0;
+      font-weight: 700;
+      line-height: 1.2;
+      color: var(--ink);
+    }
+
+    .tenure-card p {
+      font-size: 0.72rem;
+      margin: 3px 0 0 0;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    .tenure-card:hover {
+      border-color: var(--brand-light);
+      background: #f3fbf6;
+    }
+
+    .tenure-card.active {
+      background: linear-gradient(135deg, var(--brand), var(--brand-light));
+      border-color: var(--gold);
+      color: #fff;
+      box-shadow: 0 4px 10px rgba(11,92,52,0.28);
+    }
+    .tenure-card.active h3 { color: #fff; }
+    .tenure-card.active p { color: var(--gold-light); }
+
+    .calculate-btn {
+      width: 100%;
+      padding: 13px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.98rem;
+      color: #fff;
+      background: linear-gradient(to right, var(--brand-dark), var(--brand));
+      cursor: pointer;
+      box-shadow: 0 6px 14px rgba(11,92,52,0.25);
+      transition: transform 0.15s;
+      letter-spacing: 0.3px;
+    }
+
+    .calculate-btn:active { transform: scale(0.98); }
+
+    .official-rate-link {
+      margin-top: 12px;
+      text-align: center;
+    }
+    .official-rate-link a {
+      font-size: 0.74rem;
+      color: var(--brand);
+      font-weight: 600;
+      text-decoration: none;
+      border-bottom: 1px dashed var(--brand-light);
+      padding-bottom: 1px;
+    }
+    .official-rate-link a:hover { color: var(--brand-dark); }
+
+    .footer {
+      margin-top: 14px;
+      font-size: 0.68rem;
+      color: var(--ink-soft);
+      border-top: 1px dashed var(--paper-line);
+      padding-top: 10px;
+    }
+    .footer a { text-decoration: none; color: var(--brand); font-weight: 700; }
+
+    @media (min-width: 480px) {
+      .tenure-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    /* ================= POPUP STYLES ================= */
+    .popup-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(6,20,12,0.72);
+      backdrop-filter: blur(4px);
+      z-index: 999;
+      justify-content: center;
+      align-items: center;
+      padding: 18px;
+      box-sizing: border-box;
+    }
+
+    .popup-content {
+      background: #fff;
+      width: 100%;
+      max-width: 380px;
+      border-radius: 14px;
+      padding: 0;
+      text-align: left;
+      position: relative;
+      box-shadow: 0 20px 45px rgba(0,0,0,0.35);
+      opacity: 0;
+      transform: scale(0.7);
+      max-height: 92vh;
+      overflow-y: auto;
+    }
+
+    .popup-overlay.active { display: flex; }
+
+    .popup-overlay.active .popup-content {
+      animation: popupBounce 0.45s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards;
+    }
+
+    @keyframes popupBounce {
+      0% { opacity: 0; transform: scale(0.7) translateY(40px); }
+      100% { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 10px; right: 12px;
+      font-size: 22px;
+      font-weight: bold;
+      color: rgba(255,255,255,0.85);
+      cursor: pointer;
+      line-height: 1;
+      z-index: 2;
+    }
+    .close-btn:hover { color: #fff; }
+
+    .loading-pad { padding: 26px 20px; }
+    .popup-header-simple {
+      font-family: 'Noto Serif Bengali', serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--brand-dark);
+      text-align: center;
+    }
+
+    /* ===== Certificate (captured for image export) ===== */
+    #certificate {
+      background: var(--paper);
+      padding: 0 0 16px;
+    }
+
+    .cert-band {
+      background: linear-gradient(135deg, var(--brand-dark), var(--brand));
+      padding: 16px 18px 14px;
+      position: relative;
+    }
+    .cert-band::after {
+      content: "";
+      position: absolute;
+      left: 0; right: 0; bottom: -1px;
+      height: 4px;
+      background: repeating-linear-gradient(90deg, var(--gold) 0 10px, transparent 10px 18px);
+    }
+    .cert-band .cert-title {
+      font-family: 'Noto Serif Bengali', serif;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 700;
+      text-align: center;
+    }
+    .cert-band .cert-sub {
+      color: var(--gold-light);
+      font-size: 0.68rem;
+      text-align: center;
+      margin-top: 3px;
+      letter-spacing: 0.4px;
+    }
+    .cert-body { padding: 10px 18px 0; }
+
+    .result-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--ink);
+      padding: 7px 0;
+      border-bottom: 1px dashed var(--paper-line);
+    }
+    .result-item span:first-child { color: var(--ink-soft); font-weight: 500; }
+    .result-item span:last-child { color: var(--brand-dark); font-weight: 700; }
+
+    .result-item.hero {
+      border-bottom: 2px solid var(--gold);
+      padding: 10px 0;
+    }
+    .result-item.hero span:last-child { font-size: 1rem; }
+
+    .result-item.net span:last-child { color: var(--brand); }
+
+    .note {
+      font-size: 0.72rem;
+      margin-top: 12px;
+      color: #8a5a12;
+      text-align: center;
+      background: #fdf5e5;
+      border: 1px solid var(--gold-light);
+      padding: 8px 10px;
+      border-radius: 6px;
+      line-height: 1.5;
+    }
+
+    .cert-footer {
+      text-align: center;
+      font-size: 0.64rem;
+      color: var(--ink-soft);
+      margin-top: 14px;
+      padding-top: 10px;
+      border-top: 1px dashed var(--paper-line);
+    }
+
+    /* ===== Action buttons under certificate (not captured) ===== */
+    .popup-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      padding: 14px 18px 18px;
+    }
+    .action-btn {
+      padding: 10px 6px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      border-radius: 7px;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+    }
+    .action-btn.download { background: var(--brand); color: #fff; }
+    .action-btn.share { background: #fff; color: var(--brand-dark); border: 1.5px solid var(--brand); }
+    .action-btn:disabled { opacity: 0.6; cursor: default; }
+
+    .close-popup-btn {
+      width: calc(100% - 36px);
+      margin: 0 18px 18px;
+      background: var(--danger-bg);
+      color: var(--danger);
+      padding: 9px;
+      font-size: 0.85rem;
+      border: 1px solid #f3d3ce;
+      border-radius: 7px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .loader {
+      border: 4px solid #eef3ee;
+      border-top: 4px solid var(--brand);
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+      margin: 16px auto 4px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .share-status {
+      text-align: center;
+      font-size: 0.72rem;
+      color: var(--brand);
+      padding: 0 18px 10px;
+      min-height: 14px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="letterhead">
+      <div class="bank-header">
+        <h1>ইসলামি ব্যাংক বাংলাদেশ পিএলসি</h1>
+        <p>MTDR মুনাফা হিসাবকারী</p>
+      </div>
+      <div class="visitor-counter" id="visitorCount">লোড হচ্ছে...</div>
+    </div>
+
+    <div class="body-pad">
+      <div class="input-section">
+        <span class="field-label">জমার পরিমাণ (টাকা)</span>
+        <input type="text" inputmode="numeric" id="amount" placeholder="২০,০০০" autocomplete="off" />
+      </div>
+
+      <div class="label-text">
+        <span>মেয়াদ নির্বাচন করুন</span>
+        <span class="note-inline">বর্তমান হার প্রযোজ্য</span>
+      </div>
+      <div class="tenure-grid">
+        <div class="tenure-card" onclick="selectPlan(this, 5.25, 30, '১ মাস', '1 Month')">
+          <h3>১ মাস</h3><p>৫.২৫%</p>
+        </div>
+        <div class="tenure-card" onclick="selectPlan(this, 9.50, 90, '৩ মাস', '3 Months')">
+          <h3>৩ মাস</h3><p>৯.৫০%</p>
+        </div>
+        <div class="tenure-card" onclick="selectPlan(this, 9.60, 100, '১০০ দিন', '100 Days')">
+          <h3>১০০ দিন</h3><p>৯.৬০%</p>
+        </div>
+        <div class="tenure-card" onclick="selectPlan(this, 9.80, 180, '৬ মাস', '6 Months')">
+          <h3>৬ মাস</h3><p>৯.৮০%</p>
+        </div>
+        <div class="tenure-card" onclick="selectPlan(this, 9.90, 200, '২০০ দিন', '200 Days')">
+          <h3>২০০ দিন</h3><p>৯.৯০%</p>
+        </div>
+        <div class="tenure-card" onclick="selectPlan(this, 9.95, 300, '৩০০ দিন', '300 Days')">
+          <h3>৩০০ দিন</h3><p>৯.৯৫%</p>
+        </div>
+        <div class="tenure-card" onclick="selectPlan(this, 10.00, 365, '১২ মাস', '12 Months')">
+          <h3>১২ মাস</h3><p>১০.০০%</p>
+        </div>
+        <div class="tenure-card" onclick="selectPlan(this, 10.20, 730, '২৪ মাস', '24 Months')">
+          <h3>২৪ মাস</h3><p>১০.২০%</p>
+        </div>
+        <div class="tenure-card" onclick="selectPlan(this, 10.50, 1095, '৩৬ মাস', '36 Months')">
+          <h3>৩৬ মাস</h3><p>১০.৫০%</p>
+        </div>
+      </div>
+
+      <button class="calculate-btn" onclick="calculateProfit()">হিসাব করুন</button>
+
+      <div class="official-rate-link">
+        <a href="https://www.islamibankbd.com/deposit/mudaraba-term-deposit-account-mtdr" target="_blank" rel="noopener">ইসলামি ব্যাংক বাংলাদেশ পিএলসি এর অফিসিয়াল সর্বশেষ ডিপোজিট রেট দেখুন</a>
+      </div>
+
+      <div class="footer">
+        Developed by <a href="https://www.facebook.com/share/1K6Esz6k76/" target="_blank">Rubel Mahmud</a>
+      </div>
+    </div>
+  </div>
+
+  <div id="popupOverlay" class="popup-overlay" onclick="closePopupOutside(event)">
+    <div class="popup-content">
+      <span class="close-btn" onclick="closePopup()">&times;</span>
+      <div id="popupBody"></div>
+    </div>
+  </div>
+
+  <script>
+    // ===== Firebase Visitor Counter =====
+    // এই কনফিগটি নিজের Firebase প্রজেক্টের কনফিগ দিয়ে পরিবর্তন করুন
+    const firebaseConfig = {
+  apiKey: "AIzaSyBAtciLLqaHQnDzHUp1ZTOXcyuwwmoVooc",
+  authDomain: "mtdrprofit.firebaseapp.com",
+  projectId: "mtdrprofit",
+  storageBucket: "mtdrprofit.firebasestorage.app",
+  messagingSenderId: "959081973097",
+  appId: "1:959081973097:web:64c867b6acfdda09e3e9f8"
+};
+
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const visitorCounterRef = db.collection('stats').doc('visitorCount');
+
+    function bnDigits(str) {
+      const map = { '0':'০','1':'১','2':'২','3':'৩','4':'৪','5':'৫','6':'৬','7':'৭','8':'৮','9':'৯' };
+      return str.toString().split('').map(ch => map[ch] !== undefined ? map[ch] : ch).join('');
+    }
+
+    function initVisitorCounter() {
+      const el = document.getElementById('visitorCount');
+
+      // প্রতিটি ব্রাউজার/ডিভাইস একবারই গণনা হবে (রিফ্রেশে আবার গণনা হবে না)
+      const alreadyCounted = localStorage.getItem('mtdr_visitor_counted');
+
+      if (!alreadyCounted) {
+        localStorage.setItem('mtdr_visitor_counted', '1');
+        db.runTransaction(async (t) => {
+          const snap = await t.get(visitorCounterRef);
+          if (!snap.exists) {
+            t.set(visitorCounterRef, { count: 1 });
+          } else {
+            t.update(visitorCounterRef, { count: firebase.firestore.FieldValue.increment(1) });
+          }
+        }).catch((err) => console.error('Visitor increment failed:', err));
+      }
+
+      // লাইভ কাউন্ট দেখানো (রিয়েল-টাইম)
+      visitorCounterRef.onSnapshot((snap) => {
+        if (snap.exists && el) {
+          el.textContent = 'মোট ভিজিটর: ' + bnDigits(snap.data().count);
+        }
+      }, (err) => {
+        console.error('Visitor read failed:', err);
+        if (el) el.textContent = '';
+      });
+    }
+
+    initVisitorCounter();
+    // ===== End Firebase Visitor Counter =====
+
+    let currentRate = 0;
+    let currentDuration = 0;
+    let selectedText = "";
+    let selectedTextEn = "";
+
+    document.getElementById('amount').addEventListener('input', function(e) {
+      let value = e.target.value.replace(/[^0-9]/g, '');
+      if (value) {
+        e.target.value = parseInt(value, 10).toLocaleString('en-IN');
+      } else {
+        e.target.value = '';
+      }
+    });
+
+    function convertToBangla(str) {
+      const banglaDigits = {
+        '0': '০', '1': '১', '2': '২', '3': '৩', '4': '৪',
+        '5': '৫', '6': '৬', '7': '৭', '8': '৮', '9': '৯'
+      };
+      return str.toString().replace(/[0-9]/g, function(w) {
+        return banglaDigits[w];
+      });
+    }
+
+    function selectPlan(element, rate, duration, text, textEn) {
+      const cards = document.querySelectorAll('.tenure-card');
+      cards.forEach(card => card.classList.remove('active'));
+      element.classList.add('active');
+      currentRate = rate;
+      currentDuration = duration;
+      selectedText = text;
+      selectedTextEn = textEn;
+    }
+
+    function showPopup(content) {
+      const popupBody = document.getElementById('popupBody');
+      const popupOverlay = document.getElementById('popupOverlay');
+      popupBody.innerHTML = content;
+      popupOverlay.classList.add('active');
+    }
+
+    function closePopup() {
+      document.getElementById('popupOverlay').classList.remove('active');
+    }
+
+    function closePopupOutside(event) {
+      if (event.target.id === 'popupOverlay') {
+        closePopup();
+      }
+    }
+
+    function errorPopup(title, message) {
+      showPopup(`
+        <div style="background:linear-gradient(135deg, var(--brand-dark), var(--brand)); padding:16px 18px; border-radius:14px 14px 0 0;">
+          <div class="popup-header-simple" style="color:#fff;">⚠️ ${title}</div>
+        </div>
+        <div style="padding:18px; text-align:center; color:#555; font-size:0.9rem;">${message}</div>
+        <button class="close-popup-btn" onclick="closePopup()">বন্ধ করুন</button>
+      `);
+    }
+
+    let lastResult = null;
+
+    function calculateProfit() {
+      let rawAmount = document.getElementById('amount').value;
+      let cleanAmount = rawAmount.replace(/,/g, '');
+      const amount = parseFloat(cleanAmount);
+
+      if (isNaN(amount) || currentRate === 0 || currentDuration === 0) {
+        errorPopup('ত্রুটি!', 'টাকার পরিমাণ লিখুন এবং মেয়াদ নির্বাচন করুন।');
+        return;
+      }
+      if (amount <= 0) {
+        errorPopup('অবৈধ মান!', 'মাইনাস বা শূন্য মান গ্রহণযোগ্য নয়।');
+        return;
+      }
+      if (amount < 20000) {
+        errorPopup('লক্ষ্য করুন', '২০,০০০ টাকার কম আমানত গ্রহণ করা হয় না।');
+        return;
+      }
+
+      showPopup(`
+        <div class="loading-pad">
+          <div class="popup-header-simple">হিসাব করা হচ্ছে...</div>
+          <div class="loader"></div>
+        </div>
+      `);
+
+      setTimeout(() => {
+        const yearlyProfit = (amount * currentRate) / 100;
+        const totalProfit = (yearlyProfit * currentDuration) / 365;
+        const vat15 = totalProfit * 0.15;
+        const vat10 = totalProfit * 0.10;
+        const netProfit15 = totalProfit - vat15;
+        const netProfit10 = totalProfit - vat10;
+
+        const bdAmount = convertToBangla(amount.toLocaleString('en-IN'));
+        const bdRate = convertToBangla(currentRate.toString());
+        const bdTotalProfit = convertToBangla(totalProfit.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2}));
+        const bdNet15 = convertToBangla(netProfit15.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2}));
+        const bdNet10 = convertToBangla(netProfit10.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2}));
+
+        // এক্সপোর্ট (ছবি) এর জন্য প্লেইন ইংরেজি সংখ্যা/লেবেল সংরক্ষণ করা হচ্ছে
+        lastResult = {
+          tenureEn: selectedTextEn,
+          rate: currentRate.toString(),
+          amount: amount.toLocaleString('en-US'),
+          totalProfit: totalProfit.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}),
+          netProfit10: netProfit10.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}),
+          netProfit15: netProfit15.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})
+        };
+
+        const resultHtml = `
+          <div id="certificate">
+            <div class="cert-band">
+              <div class="cert-title">মুনাফা হিসাবের বিবরণী</div>
+              <div class="cert-sub">ইসলামি ব্যাংক বাংলাদেশ পিএলসি — MTDR</div>
+            </div>
+            <div class="cert-body" style="padding-top:16px;">
+              <div class="result-item"><span>নির্বাচিত মেয়াদ</span><span>${selectedText}</span></div>
+              <div class="result-item"><span>মুনাফা হার (Latest)</span><span>${bdRate}%</span></div>
+              <div class="result-item"><span>মূল টাকা</span><span>${bdAmount} টাকা</span></div>
+              <div class="result-item hero"><span>মোট মুনাফা</span><span>${bdTotalProfit} টাকা</span></div>
+              <div class="result-item net"><span>১৫% ভ্যাট বাদে (TIN জমা না দিলে)</span><span>${bdNet15} টাকা</span></div>
+              <div class="result-item net"><span>১০% ভ্যাট বাদে (TIN জমা দিলে)</span><span>${bdNet10} টাকা</span></div>
+              <div class="note">ব্যাংকে টিন সার্টিফিকেট জমা দিলে মুনাফার উপর ১০% উৎসে কর কর্তন হবে, জমা না দিলে ১৫% কর্তন হবে।</div>
+            </div>
+          </div>
+          <div class="popup-actions">
+            <button class="action-btn download" onclick="downloadCertificate()">⬇ ডাউনলোড</button>
+            <button class="action-btn share" onclick="shareCertificate()">↗ শেয়ার করুন</button>
+          </div>
+          <div class="share-status" id="shareStatus"></div>
+          <button class="close-popup-btn" onclick="closePopup()">নতুন হিসাব করুন</button>
+        `;
+
+        document.getElementById('popupBody').innerHTML = resultHtml;
+      }, 500);
+    }
+
+    // A4 (৭৯৪x১১২৩ px @96dpi) সাইজের একটি সম্পূর্ণ ইংরেজি টেমপ্লেট তৈরি করা হয়,
+    // যা স্ক্রিনে দেখানো হয় না বরং শুধু ছবি বানানোর জন্য সাময়িকভাবে DOM-এ যোগ করা হয়।
+    // প্লেইন ইংরেজি টেক্সট এবং সিস্টেম ফন্ট ব্যবহারের কারণে html2canvas-এ
+    // কোনো জটিল স্ক্রিপ্ট শেপিং বা বহিরাগত-ফন্ট CORS সমস্যা হয় না।
+    function buildA4Node() {
+      const r = lastResult;
+      const node = document.createElement('div');
+      node.style.position = 'fixed';
+      node.style.top = '0';
+      node.style.left = '-99999px';
+      node.style.width = '794px';
+      node.style.height = '1123px';
+      node.style.background = '#ffffff';
+      node.style.fontFamily = 'Arial, Helvetica, sans-serif';
+      node.style.color = '#1a1a1a';
+      node.style.display = 'flex';
+      node.style.flexDirection = 'column';
+      node.style.boxSizing = 'border-box';
+
+      node.innerHTML = `
+        <div style="background:#0b5c34;padding:46px 60px 34px;border-bottom:6px solid #b3872f;">
+          <div style="color:#ffffff;font-size:28px;font-weight:bold;text-align:center;letter-spacing:0.5px;">Islami Bank Bangladesh PLC</div>
+          <div style="color:#e6d5a8;font-size:15px;text-align:center;margin-top:8px;letter-spacing:1px;">MTDR PROFIT CALCULATION RESULT</div>
+        </div>
+        <div style="padding:55px 65px;flex:1;">
+          <table style="width:100%;border-collapse:collapse;font-size:17px;">
+            <tr>
+              <td style="padding:14px 0;color:#555;border-bottom:1px dashed #ddd;">Deposit Amount</td>
+              <td style="padding:14px 0;text-align:right;font-weight:bold;border-bottom:1px dashed #ddd;">BDT ${r.amount}</td>
+            </tr>
+            <tr>
+              <td style="padding:14px 0;color:#555;border-bottom:1px dashed #ddd;">Tenure</td>
+              <td style="padding:14px 0;text-align:right;font-weight:bold;border-bottom:1px dashed #ddd;">${r.tenureEn}</td>
+            </tr>
+            <tr>
+              <td style="padding:14px 0;color:#555;border-bottom:1px dashed #ddd;">Profit Rate (Latest)</td>
+              <td style="padding:14px 0;text-align:right;font-weight:bold;border-bottom:1px dashed #ddd;">${r.rate}%</td>
+            </tr>
+            <tr>
+              <td style="padding:18px 0;color:#073b21;font-size:19px;font-weight:bold;border-bottom:2px solid #b3872f;">Total Profit</td>
+              <td style="padding:18px 0;text-align:right;font-size:19px;font-weight:bold;color:#073b21;border-bottom:2px solid #b3872f;">BDT ${r.totalProfit}</td>
+            </tr>
+            <tr>
+              <td style="padding:14px 0;color:#555;border-bottom:1px dashed #ddd;">Net Profit — with TIN (10% VAT deducted)</td>
+              <td style="padding:14px 0;text-align:right;font-weight:bold;color:#0b5c34;border-bottom:1px dashed #ddd;">BDT ${r.netProfit10}</td>
+            </tr>
+            <tr>
+              <td style="padding:14px 0;color:#555;">Net Profit — without TIN (15% VAT deducted)</td>
+              <td style="padding:14px 0;text-align:right;font-weight:bold;color:#0b5c34;">BDT ${r.netProfit15}</td>
+            </tr>
+          </table>
+          <div style="margin-top:36px;padding:18px 22px;background:#fdf5e5;border:1px solid #e6d5a8;border-radius:6px;font-size:14px;color:#8a5a12;line-height:1.7;">
+            Note: If a TIN (Taxpayer Identification Number) certificate is submitted to the bank, 10% VAT will be deducted from the profit. Otherwise, 15% VAT will be deducted.
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(node);
+      return node;
+    }
+
+    async function captureCertificate() {
+      if (!lastResult) throw new Error('no result');
+      const node = buildA4Node();
+      try {
+        const canvas = await html2canvas(node, {
+          backgroundColor: '#ffffff',
+          scale: 2,
+          useCORS: true,
+          width: 794,
+          height: 1123
+        });
+        return canvas;
+      } finally {
+        document.body.removeChild(node);
+      }
+    }
+
+    async function downloadCertificate() {
+      const status = document.getElementById('shareStatus');
+      try {
+        status.textContent = 'ছবি তৈরি হচ্ছে...';
+        const canvas = await captureCertificate();
+        const link = document.createElement('a');
+        link.download = 'MTDR-Profit-Result.png';
+        link.href = canvas.toDataURL('image/png');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        status.textContent = 'ডাউনলোড সম্পন্ন হয়েছে ✓';
+      } catch (err) {
+        status.textContent = 'দুঃখিত, ছবি তৈরি করা যায়নি।';
+      }
+    }
+
+    async function shareCertificate() {
+      const status = document.getElementById('shareStatus');
+      try {
+        status.textContent = 'ছবি তৈরি হচ্ছে...';
+        const canvas = await captureCertificate();
+        canvas.toBlob(async (blob) => {
+          if (!blob) {
+            status.textContent = 'দুঃখিত, ছবি তৈরি করা যায়নি।';
+            return;
+          }
+          const file = new File([blob], 'MTDR-Profit-Result.png', { type: 'image/png' });
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            try {
+              await navigator.share({
+                files: [file],
+                title: 'MTDR Profit Result',
+                text: 'MTDR Profit Calculation Result'
+              });
+              status.textContent = '';
+            } catch (shareErr) {
+              status.textContent = '';
+            }
+          } else {
+            const link = document.createElement('a');
+            link.download = 'MTDR-Profit-Result.png';
+            link.href = canvas.toDataURL('image/png');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            status.textContent = 'এই ডিভাইসে সরাসরি শেয়ার সমর্থিত নয়, তাই ছবিটি ডাউনলোড হয়েছে।';
+          }
+        }, 'image/png');
+      } catch (err) {
+        status.textContent = 'দুঃখিত, শেয়ার করা যায়নি।';
+      }
+    }
+  </script>
+</body>
+</html>
